@@ -1,22 +1,36 @@
+import asyncio
 import discord
 from discord.ext import commands
+import os
+from dotenv import load_dotenv
 
-token = ''
+load_dotenv()
 
 intents = discord.Intents.all()
-client = commands.Bot(command_prefix='!', intents=intents)
+intents.members = True
 
-@client.event
+bot = commands.Bot(command_prefix='!', intents=intents)
+
+@bot.event
 async def on_ready():
-    print("Bot is online :)")
+    print(f'{bot.user.name} has connected to discord :)')
 
-@client.command()
-async def ping(ctx):
-    await ctx.send("ping")
+@bot.command(name='hello')
+async def hello(ctx):
+    await ctx.send(f'hello there, {ctx.author}')
 
-@client.command()
-async def addition(ctx, num1, num2):
-    sum = int(num1) + int(num2)
-    await ctx.send(sum)
+async def load_cogs(): 
+    for filename in os.listdir('./cogs'):
+        if filename.endswith('.py'):
+            try:
+                await bot.load_extension(f'cogs.{filename[:-3]}')
+                print(f'Loaded cog for {filename[:-3]} successfully.')
+            except:
+                print(f"Couldn't load cog for {filename[:-3]} successfully.")
 
-client.run(token)
+async def main():
+    async with bot:
+        await load_cogs()
+        await bot.start(os.getenv('TOKEN'))
+
+asyncio.run(main())
