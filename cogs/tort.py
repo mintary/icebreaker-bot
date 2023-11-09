@@ -8,21 +8,23 @@ class Tort(commands.Cog):
         self.questions = self.load_questions()
         self.used_questions = set()
 
-    def load_questions(self):
-        with open('questions.json', 'r') as f:
+    def load_questions(self): 
+        with open('resources/questions.json', 'r') as f:
             data = json.load(f)
-            list = [str(item) for item in data]
+            list = [str(item) for item in data['Levels']['Level 1']['Questions']]
         return list
-
-    @commands.command(name='tort_start')
-    async def tort_start(self, ctx):
-        await ctx.send('Started new tort game!')
-
-    @commands.command(name='tort_end')
-    async def tort_end(self, ctx):
-        self.used_questions.clear()
-        await ctx.send('Ended tort game.')
     
+    @commands.command(name='used')
+    async def used(self, ctx):
+        await ctx.send(self.used_questions)
+    
+    @commands.command(name='tort_clear')
+    async def tort_clear(self, ctx):
+        self.used_questions.clear()
+        await ctx.send('Tort questionbank cleared.')
+
+    # Generates a random question ensuring that there are no repeat questions
+    # TBD: convert this to just a method to be called, not a command
     @commands.command(name='tort_ask')
     async def tort_ask(self, ctx):
         if len(self.questions) == len(self.used_questions):
@@ -33,7 +35,10 @@ class Tort(commands.Cog):
         selected_q = random.choice(unused_questions)
         self.used_questions.add(selected_q)
 
-        await ctx.send(f'Question: {selected_q}')
-    
+        await ctx.send(f'''
+                       Question: {selected_q}. 
+                       ''')
+
+
 async def setup(bot):
     await bot.add_cog(Tort(bot))
