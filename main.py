@@ -23,7 +23,7 @@ async def hello(ctx):
     await ctx.send(f'hello there, {ctx.author}')
 
 async def load_cogs(): # Load all commands stored in cogs (found in the cogs folder)
-    for filename in os.listdir('./cogs'): # cogs folder
+    for filename in os.listdir('./cogs'): # Cogs folder will store commands
         if filename.endswith('.py'): 
             try:
                 await bot.load_extension(f'cogs.{filename[:-3]}')
