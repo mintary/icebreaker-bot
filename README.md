@@ -16,7 +16,7 @@ TOKEN = ''
 1) Use !hello to test that the bot is responding to commands.
 
 #### Tort
-1) Use the !tort command to open a game of tort. Users will be able to join the lobby by using !join and !leave to leave it.
+1) Use the !tort command to open a game of tort. Users will be able to join the lobby by using !join and !leave to leave it. Use !restart to reset the lobby.
 2) Use the !start command to begin a game of tort.
 3) There are currently three levels, and three rounds of Tort. 
 4) Users will be asked one question corresponding to each level, once per round. Each user will be asked one question. 
