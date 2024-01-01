@@ -13,20 +13,40 @@ TOKEN = ''
 
 ## Current features
 #### General
-1) The bot works, so there's that.
-2) Use !hello to test that it's responding to commands.
+1) Use !hello to test that the bot is responding to commands.
 
 #### Tort
-1) Use !tort_start to start a game. Currently a purely decorative command (no functionality).
-2) Ask the bot using !ask_tort to give you a question to answer. Will not give repeat questions. Once it's out of questions, will stop giving questions.
-3) Use !tort_end to reset the list of used questions.
+1) Use the !tort command to open a game of tort. Users will be able to join the lobby by using !join and !leave to leave it.
+2) Use the !start command to begin a game of tort.
+3) There are currently three levels, and three rounds of Tort. 
+4) Users will be asked one question corresponding to each level, once per round. Each user will be asked one question. 
+5) By default, questions cannot be repeated.
+6) The question can be chosen, at which point the user has a maximum of 100 seconds to respond, or reshuffled an infinite number of times.
+
+#### Changelog
+1) Added basic functionality for the Tort game, including
+a. The game.py file, which currently contains the gameflow.
+b. The tort.py file, which currently allows the game to be opened and started using commands.
+2) Deleted the original tort.py file and its test commands, which are now implemented in the game.py file
+3) Games cannot be started if another game is already in progress.
+4) Lobbies cannot be opened if another lobby is already open.
+5) The default time to respond to a question is 100.0 seconds, and the default timeout to 10.0 seconds.
 
 ## Features to add
 #### Tort
-1) Tort game can only be started with the !tort_start command.
-2) User can choose from a set number of questions.
-3) Can set the number of rounds to play.
-4) Server can create multiple custom question lists.
+1) Command to exit the gameflow at any point.
+2) Server is able to create custom question lists. 
+a. Question lists can be created for each game. This will also require automatically configuring the maximum number of rounds/levels to ensure that there will be enough questions for the entire game.
+b. Question lists can be saved for that server.
+3) More customizability
+a. Ability to add a maximum number of reshuffles for the entire game
+b. Ability to vary timeout durations.
+c. Ability to create a larger number of levels or rounds.
+d. Ability to allow repeat questions.
 
 #### General
 1) Help command with list of commands.
+2) Convert commands to embed message format (prettier).
+
+#### For fun
+1) Habit tracker with leaderboard functionality.

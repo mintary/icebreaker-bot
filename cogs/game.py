@@ -1,6 +1,6 @@
-from discord.ext import commands
 import json
 import random
+import asyncio
 
 '''
 Actions that have to do with manipulating questions in the questionbank. With attributes to keep
@@ -8,151 +8,109 @@ track of which questions have been chosen. A separate questionbank is used for e
 game. Mostly in case we want to add option to create custom levels and questionbanks in the future.
 '''
 class Questionbank():
-    def __init__(self, file):
+    def __init__(self, file, level:str):
+        self.level = "Level " + level
         self.questions = set(self.load_questions(file)) # Attribute for all questions
         self.used = set() # Attribute for used questions
 
-    def load_questions(self, file, level: str): # Generate a list of questions corresponding to the level (preferably this 
-        # would be integers but idk how to do that with json)
+    def load_questions(self, file): # Generate a list of questions corresponding to the level, which is currently expressed in the format ('Level n')
+        # TBA: method of storing the level data as an integer, not a string
         with open(file, 'r') as f:
             data = json.load(f)
-            level_questions = [str(item) for item in data['Levels'][level]['Questions']]
+            level_questions = [str(item) for item in data['Levels'][self.level]]
 
         return level_questions
 
     # Method to pick a question from the questionbank
     def pick_question(self):
         # Pick question from the set, but excluding the used questions
-        q = random.choice(set(self.questions).difference(self.used))
+        unused_questions = list(set(self.questions).difference(self.used))
+        q = random.choice(unused_questions)
         self.used.add(q)
-        return q
-
+        return q 
+    
+    # Method to add back a question that was picked, but now should be returned to the questionbank
+    def add_back(self, question):
+        try:
+            self.used.remove(question)
+            self.questions.add(question)
+        except KeyError:
+            print('Error: attempted to add back question that did not exist.')
 
 '''
 Wrapper to execute the logic flow of an entire game. 
 '''
-class Game(commands.Cog):
-    def __init__(self, bot):
+class Game():
+    def __init__(self, bot, ctx, players, channel_id):
+        # TBA Ability to update the number of levels and rounds via a command
         self.bot = bot
-        # Number of players
+        self.ctx = ctx
+        self.levels = 3
+        self.time = 100.0 # Default number of seconds to respond to question
+        self.rounds = 3
+        self.players = players
+        self.channel = self.bot.get_channel(channel_id)
 
-        # Number of choices to give person (TBA)
+    async def game(self):
+        '''
+        There are three levels in a Tort game, as well as three rounds. 
 
-        # Minimum level to start
+        Every player will be asked a question corresponding to the current level of the game.
 
-        # Maximum level 
+        '''
+        for level in range(1, self.levels + 1):
+            questionbank = Questionbank("resources/questions.json", str(level))
+            await self.ctx.send(f"Starting level {level} of {self.levels}.")
 
-        # Number of questions per person per round
+            for round in range(1, self.rounds + 1):
+                await self.ctx.send(f"Round {round} of {self.rounds} has begun.")
+                for player in self.players:
+                    await self.play(questionbank, player)
 
-        # Number of rounds per level
 
-        # Reshuffles allowed per player
-
-    # Command to start the game
-    @commands.command(name='start')
-    async def start(self, ctx):
-        pass
-        # Display the current settings
-        # Ask if any of the settings should be changed
-        # Run the lobby until someone marks it as ready
-
-        # In the future, add an option to have default server settings lmao
-
-        # Play as many rounds as are specified
-
-            # After round is played, send message
-
-            # Update the number of rounds that have been played
-
-        # End game and display message
-
-    # Change settings
-
-        # Specify the number of choices to give a person
-
-        # Specify the minimum level to start at (default value = 1)
-
-        # Specify the maximum level to reach (default value = 3)
-
-        # Specify the number of questions per person per round (default value = 3)
-
-            # Also display a maximum beyond which there wouldn't be enough questions
-
-        # Specify the number of rounds per level
-            
-            # Also display a maximum beyond which there wouldn't be enough questions
-
-        # Specify the number of reshuffles allowed per player
-
-    # Play one level
-
-        # Check level, generate question list from the unused questions of that level
-
-        # While the number of rounds has not exceeded the number of rounds per level
-
-            # For each player in the lobby
-
-                # Play per player
-                
-        # Mark the level as over and update the level
-
-    # Logic flow for a single person's turn
-    async def play(self, ctx, questionbank, player):
+    async def play(self, questionbank, player_id): # TBA: Functionality related to player argument. Allows for checking for player ID and number of reshuffles associated with them
+        '''
+        For a single person's turn. The player will be given a question picked from the
+        questionbank. They will have the chance to accept or reshuffle it within 10 seconds. 
+        If they choose to reshuffle, they will be asked a new question. If they choose the question,
+        their turn is over. If they do not make a choice in time, their turn is skipped.
+        '''
         # Ask them a question and prompt them to respond (give list of commands)
+        turn_over = False
         while turn_over != True:
             chosen_q = questionbank.pick_question()
-            reshuffles = player.reshuffles() #TBA lol add under lobby class ....??? how to keep track of reshuffles for each player efficiently
-            turn_over = False 
-            await ctx.send(
-                            f'''
-                            Here's your question, {ctx.author.mention}: {chosen_q}
-                            Reply with "accept" to accept the question, or "reshuffle" to pick a new one.
-                            You have {reshuffles} left.
-                            '''
-                            )
+            # TBA: Ability to get the number of reshuffles associated with the player
+            player_name = await self.bot.fetch_user(player_id)
+            message = await self.ctx.send(f"Here's your question, {player_name}: {chosen_q} You have 10 seconds to either accept, or reshuffle the question.") 
+                 
+            await message.add_reaction('✅')
+            await message.add_reaction('❌')
 
-            def check(msg, user):
-                pass # TBA deal with user input in case user mistypes or smthing ALSO the message needs to time out 
-                    # eventually and default to accept so use ayncio sleep at some point here
+            def check(reaction, user):
+                return user.id == player_id and str(reaction.emoji) in ['✅', '❌']
             
-            # If reshuffle
-                # Then we take the chosen question and we put that bad boy back in the unused questions list
-                # Continue with the loop 
-            # If accept then we don't do shit
-                # Mark their turn as over to exit the loop
-                turn_over == True
-    
-    # Check maximum number of questions based on current parameters assuming constant number of players, levels, and rounds or something like that idk
-    def max_questions():
-        pass
-        
+            def check2(reaction, user):
+                return user.id == player_id and str(reaction.emoji) == "👍"
 
-    # Command to end a game early
-    @commands.command('end')
-    async def end(self, ctx):
-        pass
+            try: 
+                reaction, user = await self.bot.wait_for('reaction_add', timeout=10.0, check=check)  # Fixed the check condition
+                if str(reaction.emoji) == '✅':  # Accept question. Mark turn as over and exit loop
+                    await message.edit(content = f"{player_name} chose the question: {chosen_q} React with 👍 once you are done answering. You have {str(self.time)} seconds.") 
+                    
+                    # Clean this code
+                    await message.add_reaction('👍')
+                    try:
+                        reaction_2, user_2 = await self.bot.wait_for('reaction_add', timeout=self.time, check=check2)
+                        if str(reaction_2.emoji) == '👍':
+                            turn_over = True
+                    except asyncio.TimeoutError:
+                        turn_over = True
 
-'''
-A class to keep track of who is playing - ensures that each game is run for a group of players.
-'''
-class Lobby(commands.Cog):
-    def __init__():
-        pass
-        # Add player attributes here
+                    turn_over = True  
+                elif str(reaction.emoji) == '❌':  # Reshuffle question. Continue with loop
+                    questionbank.add_back(chosen_q)
+                    await message.edit(content = f"{player_name} chose to reshuffle the question: {chosen_q}")
+            except asyncio.TimeoutError:  # Spent more than 10 seconds choosing
+                await message.channel.send("Time's up! Your turn was skipped.")
+                turn_over = True  
 
-    # Add player to lobby
-    @commands.command(name='join')
-    async def join(self, ctx):
-        pass
-
-    # Delete player from lobby
-    @commands.command(name='leave')
-    async def leave(self, ctx):
-        pass
-
-    # Shuffle list of players (to change order)
-
-    # Mark lobby as ready
-
-    # Attempt to play (if there's error, won't start game)
-    
