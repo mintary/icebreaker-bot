@@ -21,7 +21,6 @@ TOKEN = ''
 3) There are currently three levels, and three rounds of Tort. 
 4) Users will be asked one question corresponding to each level, once per round. Each user will be asked one question. 
 5) By default, questions cannot be repeated.
-6) The question can be chosen, at which point the user has a maximum of 100 seconds to respond, or reshuffled an infinite number of times.
 
 #### Changelog
 1) Added basic functionality for the Tort game, including
