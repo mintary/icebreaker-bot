@@ -4,7 +4,7 @@ from game import Game
 class Tort(commands.Cog):
     '''
     Tort class will contain commands that enable the user to open a game (allowing players to join the lobby) and
-    also start a game. Contains three different commands: !join !leave !start
+    also start a game. Contains four different commands: !join !leave !start !restart
 
     Will keep track of if the lobby is open and if there is currently a game in progress.
     '''
@@ -72,7 +72,7 @@ class Tort(commands.Cog):
             await ctx.send("Game is already in progress.")
         else:
             await ctx.send("Use !tort to start a new game.")
-    
+
     # Open the lobby
     @commands.command(name='tort')
     async def tort(self, ctx):

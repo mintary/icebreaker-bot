@@ -12,6 +12,7 @@ class Questionbank():
         self.level = "Level " + level
         self.questions = set(self.load_questions(file)) # Attribute for all questions
         self.used = set() # Attribute for used questions
+        self.ended = False
 
     def load_questions(self, file): # Generate a list of questions corresponding to the level, which is currently expressed in the format ('Level n')
         # TBA: method of storing the level data as an integer, not a string
@@ -42,11 +43,10 @@ Wrapper to execute the logic flow of an entire game.
 '''
 class Game():
     def __init__(self, bot, ctx, players, channel_id):
-        # TBA Ability to update the number of levels and rounds via a command
+        # TBA Ability to update the number of levels, rounds, and set a timer via a command
         self.bot = bot
         self.ctx = ctx
         self.levels = 3
-        self.time = 100.0 # Default number of seconds to respond to question
         self.rounds = 3
         self.players = players
         self.channel = self.bot.get_channel(channel_id)
@@ -81,7 +81,7 @@ class Game():
             chosen_q = questionbank.pick_question()
             # TBA: Ability to get the number of reshuffles associated with the player
             player_name = await self.bot.fetch_user(player_id)
-            message = await self.ctx.send(f"Here's your question, {player_name}: {chosen_q} You have 10 seconds to either accept, or reshuffle the question.") 
+            message = await self.ctx.send(f"Here's your question, {player_name}: {chosen_q} You can either accept, or reshuffle the question.") 
                  
             await message.add_reaction('✅')
             await message.add_reaction('❌')
@@ -92,25 +92,19 @@ class Game():
             def check2(reaction, user):
                 return user.id == player_id and str(reaction.emoji) == "👍"
 
-            try: 
-                reaction, user = await self.bot.wait_for('reaction_add', timeout=10.0, check=check)  # Fixed the check condition
-                if str(reaction.emoji) == '✅':  # Accept question. Mark turn as over and exit loop
-                    await message.edit(content = f"{player_name} chose the question: {chosen_q} React with 👍 once you are done answering. You have {str(self.time)} seconds.") 
-                    
-                    # Clean this code
-                    await message.add_reaction('👍')
-                    try:
-                        reaction_2, user_2 = await self.bot.wait_for('reaction_add', timeout=self.time, check=check2)
-                        if str(reaction_2.emoji) == '👍':
-                            turn_over = True
-                    except asyncio.TimeoutError:
-                        turn_over = True
+            reaction, user = await self.bot.wait_for('reaction_add', check=check)  # Fixed the check condition
+            if str(reaction.emoji) == '✅':  # Accept question. Mark turn as over and exit loop
+                await message.edit(content = f"{player_name} accepted the question: {chosen_q} React with 👍 once you are done answering. ") 
+                
+                # Clean this code
+                await message.add_reaction('👍')
+                reaction_2, user_2 = await self.bot.wait_for('reaction_add', check=check2)
+                if str(reaction_2.emoji) == '👍':
+                    turn_over = True
 
-                    turn_over = True  
-                elif str(reaction.emoji) == '❌':  # Reshuffle question. Continue with loop
-                    questionbank.add_back(chosen_q)
-                    await message.edit(content = f"{player_name} chose to reshuffle the question: {chosen_q}")
-            except asyncio.TimeoutError:  # Spent more than 10 seconds choosing
-                await message.channel.send("Time's up! Your turn was skipped.")
                 turn_over = True  
+            elif str(reaction.emoji) == '❌':  # Reshuffle question. Continue with loop
+                questionbank.add_back(chosen_q)
+                await message.edit(content = f"{player_name} chose to reshuffle the question: {chosen_q}")
+
 
