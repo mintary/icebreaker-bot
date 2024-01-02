@@ -30,7 +30,6 @@ TOKEN = ''
 2) Deleted the original tort.py file and its test commands, which are now implemented in the game.py file
 3) Games cannot be started if another game is already in progress.
 4) Lobbies cannot be opened if another lobby is already open.
-5) The default time to respond to a question is 100.0 seconds, and the default timeout to 10.0 seconds.
 
 ## Features to add
 #### Tort
