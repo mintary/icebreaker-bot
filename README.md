@@ -21,7 +21,6 @@ TOKEN = ''
 3) There are currently three levels, and three rounds of Tort. 
 4) Users will be asked one question corresponding to each level, once per round. Each user will be asked one question. 
 5) By default, questions cannot be repeated.
-6) The question can be chosen, at which point the user has a maximum of 100 seconds to respond, or reshuffled an infinite number of times.
 
 #### Changelog
 1) Added basic functionality for the Tort game, including
@@ -30,7 +29,6 @@ TOKEN = ''
 2) Deleted the original tort.py file and its test commands, which are now implemented in the game.py file
 3) Games cannot be started if another game is already in progress.
 4) Lobbies cannot be opened if another lobby is already open.
-5) The default time to respond to a question is 100.0 seconds, and the default timeout to 10.0 seconds.
 
 ## Features to add
 #### Tort

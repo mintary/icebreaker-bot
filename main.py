@@ -6,10 +6,10 @@ from dotenv import load_dotenv
 
 load_dotenv() 
 
-intents = discord.Intents.all() # Give bot all permissions
-intents.members = True # Permissions related to member actions (i.e joining and leaving)
+intents = discord.Intents.all()
+intents.members = True
 
-bot = commands.Bot(command_prefix='!', intents=intents) # Create bot object
+bot = commands.Bot(command_prefix='!', intents=intents) 
 
 @bot.event
 async def on_ready(): # Triggers when bot has connected to Discord
@@ -26,14 +26,14 @@ async def load_cogs(): # Load all commands stored in cogs (found in the cogs fol
     for filename in os.listdir('./cogs'): # Cogs folder will store commands
         if filename.endswith('.py'): 
             try:
-                await bot.load_extension(f'cogs.{filename[:-3]}') 
+                await bot.load_extension(f'cogs.{filename[:-3]}')
                 print(f'Loaded cog for {filename[:-3]} successfully.')
             except:
                 print(f"Couldn't load cog for {filename[:-3]} successfully, or no commands were added from that class.")
 
 async def main():
     async with bot:
-        await load_cogs() # Add commands
+        await load_cogs()
         await bot.start(os.getenv('TOKEN')) # Get stored token in .env file
 
-asyncio.run(main()) 
+asyncio.run(main())
