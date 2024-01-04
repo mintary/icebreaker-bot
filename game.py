@@ -58,13 +58,13 @@ class Game():
         Every player will be asked a question corresponding to the current level of the game.
 
         '''
-        for level in range(1, self.levels + 1):
-            questionbank = Questionbank("resources/questions.json", str(level))
+        for level in range(1, self.levels + 1): # By default, will run from levels 1 - 3
+            questionbank = Questionbank("resources/questions.json", str(level)) # Create a new questionbank corresponding to that level
             await self.ctx.send(f"Starting level {level} of {self.levels}.")
 
-            for round in range(1, self.rounds + 1):
+            for round in range(1, self.rounds + 1): # By default, will run from rounds 1 - 3
                 await self.ctx.send(f"Round {round} of {self.rounds} has begun.")
-                for player in self.players:
+                for player in self.players: # Every player's turn will run
                     await self.play(questionbank, player)
 
 
@@ -86,13 +86,13 @@ class Game():
             await message.add_reaction('✅')
             await message.add_reaction('❌')
 
-            def check(reaction, user):
+            def check(reaction, user): # Ensure that only the player whose turn it is can react (with only 2 valid emojis)
                 return user.id == player_id and str(reaction.emoji) in ['✅', '❌']
             
-            def check2(reaction, user):
+            def check2(reaction, user): # Ensure that only the player whose turn it is can react (with only 1 valid emoji)
                 return user.id == player_id and str(reaction.emoji) == "👍"
 
-            reaction, user = await self.bot.wait_for('reaction_add', check=check)  # Fixed the check condition
+            reaction, user = await self.bot.wait_for('reaction_add', check=check) # Store the reaction that the player selects
             if str(reaction.emoji) == '✅':  # Accept question. Mark turn as over and exit loop
                 await message.edit(content = f"{player_name} accepted the question: {chosen_q} React with 👍 once you are done answering. ") 
                 
