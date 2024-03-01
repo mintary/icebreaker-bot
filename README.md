@@ -1,6 +1,6 @@
 # operant-bot
 
-a silly bot.
+A silly bot that runs social games (currently only Truth or Truth).
 
 ## Running the bot
 
