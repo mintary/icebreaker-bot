@@ -1,4 +1,4 @@
-# operant-bot
+# icebreaker-bot
 
 A silly bot that runs social games (currently only Truth or Truth).
 
