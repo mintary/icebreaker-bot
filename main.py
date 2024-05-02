@@ -1,7 +1,7 @@
 import asyncio
+import os
 import discord
 from discord.ext import commands
-import os
 from dotenv import load_dotenv
 
 load_dotenv() 
@@ -9,31 +9,31 @@ load_dotenv()
 intents = discord.Intents.all()
 intents.members = True
 
-bot = commands.Bot(command_prefix='!', intents=intents) 
+class Bot(commands.Bot):
+    def __init__(self):
+        super().__init__(command_prefix='/', intents=discord.Intents.all(), help_command=commands.DefaultHelpCommand())
 
-@bot.event
-async def on_ready(): # Triggers when bot has connected to Discord
-    print(f'{bot.user.name} has connected to discord :)')
-    await bot.change_presence( activity=discord.Game(
-        name='tort bot | wip'
-        )) # Sets "game bot is playing" to 'tort bot | wip'
+        self.extension_list = []
+    
+    async def on_ready(self):
+        print(f'{bot.user.name} has connected to Discord :)')
+        synced = await self.tree.sync()
+        print(f"Synced {len(synced)} command(s).")
+        await bot.change_presence(activity=discord.Game(name='Icebreaker bot | WIP'))
+    
+    @commands.command(name="hello", description="Says hello to bot, testing if it is responding to commands.")
+    async def hello(self, ctx):
+        await ctx.send(f'Hello there, {ctx.author}!')
 
-@bot.command(name='hello') # Test command to make sure bot is responding to commands
-async def hello(ctx):
-    await ctx.send(f'hello there, {ctx.author}')
+    async def setup_hook(self):
+        for filename in os.listdir('./cogs'):
+            if filename.endswith('.py'):
+                try:
+                    await bot.load_extension(f'cogs.{filename[:-3]}')
+                    print(f'Loaded cog for {filename[:-3]} successfully.')
+                except:
+                    print(f"Couldn't load cog for {filename[:-3]} successfully, or no commands were added from that class.")
 
-async def load_cogs(): # Load all commands stored in cogs (found in the cogs folder)
-    for filename in os.listdir('./cogs'): # Cogs folder will store commands
-        if filename.endswith('.py'): 
-            try:
-                await bot.load_extension(f'cogs.{filename[:-3]}')
-                print(f'Loaded cog for {filename[:-3]} successfully.')
-            except:
-                print(f"Couldn't load cog for {filename[:-3]} successfully, or no commands were added from that class.")
+bot = Bot()
 
-async def main():
-    async with bot:
-        await load_cogs()
-        await bot.start(os.getenv('TOKEN')) # Get stored token in .env file
-
-asyncio.run(main())
+bot.run(os.getenv('TOKEN'))
